@@ -16,12 +16,15 @@ def main(global_rank, local_rank, world_size):
 
     dist.init_process_group(backend="nccl", rank=global_rank, world_size=world_size)
 
-    # create model and move it to GPU with id local_rank
     device_id = local_rank
 
     # Data
     if local_rank == 0:
-        dataset = WikiText2(".", download=True)
+        WikiText2(".", download=True)
+
+    torch.distributed.barrier()
+
+    dataset = WikiText2(".", download=False)
 
     # Split data in to train, val, test
     n = len(dataset)
@@ -31,6 +34,7 @@ def main(global_rank, local_rank, world_size):
                                   shuffle=False,
                                   sampler=DistributedSampler(train_dataset))
 
+    # create model and move it to GPU with id local_rank
     model = Transformer(vocab_size=dataset.vocab_size)
     model.to(device_id)
 
