@@ -76,6 +76,10 @@ if __name__ == "__main__":
     nprocs = torch.cuda.device_count() if device == "cuda" else 1
 
     global_rank = int(os.environ.get("RANK", -1))
+    local_rank = int(os.environ.get("LOCAL_RANK", -1))
     world_size = int(os.environ.get("WORLD_SIZE", nprocs))
 
-    mp.spawn(main, args=(global_rank, world_size, device), nprocs=nprocs)
+    if global_rank == -1:
+        mp.spawn(main, args=(global_rank, world_size, device), nprocs=nprocs)
+    else:
+        main(local_rank, global_rank, world_size, device)
