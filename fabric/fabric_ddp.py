@@ -13,7 +13,7 @@ def main():
 
     # Data
     with fabric.rank_zero_first(local=True):
-        dataset = WikiText2(".", download=True)
+        dataset = WikiText2(download=True)
 
     # Split data in to train, val, test
     n = len(dataset)
@@ -30,12 +30,12 @@ def main():
     model.train()
     num_epochs = 2
     for epoch in range(num_epochs):
-        for batch in train_dataloader:
+        for it, batch in enumerate(train_dataloader):
             input, target = batch
             optimizer.zero_grad()
             output = model(input, target)
             loss = F.nll_loss(output, target.view(-1))
-            fabric.log("train_loss", loss, prog_bar=True)
+            fabric.print(f"epoch/it: {epoch}/{it}, train_loss: {loss}")
             fabric.backward(loss)
             optimizer.step()
 

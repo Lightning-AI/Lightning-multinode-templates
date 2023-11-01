@@ -11,34 +11,39 @@ from torch.utils.data.distributed import DistributedSampler
 from lightning.pytorch.demos import Transformer, WikiText2
 
 
-def main(global_rank, local_rank, world_size):
+def main(local_rank, global_rank, world_size, device):
     torch.manual_seed(42)
 
-    dist.init_process_group(backend="nccl", rank=global_rank, world_size=world_size)
+    backend = "nccl" if device == "cuda" else "gloo"
+    if global_rank == -1:
+        global_rank = local_rank
+
+    dist.init_process_group(backend=backend, rank=global_rank, world_size=world_size)
 
     device_id = local_rank
 
-    # Data
     if local_rank == 0:
-        WikiText2(".", download=True)
+        WikiText2(download=True)
 
     torch.distributed.barrier()
 
-    dataset = WikiText2(".", download=False)
+    dataset = WikiText2(download=False)
 
-    # Split data in to train, val, test
     n = len(dataset)
     train_dataset, val_dataset, test_dataset = random_split(dataset, [n - 4000, 2000, 2000])
-    train_dataloader = DataLoader(train_dataset,
-                                  batch_size=20,
-                                  shuffle=False,
-                                  sampler=DistributedSampler(train_dataset))
+    train_dataloader = DataLoader(
+        train_dataset,
+        batch_size=20,
+        shuffle=False,
+        sampler=DistributedSampler(train_dataset)
+    )
 
-    # create model and move it to GPU with id local_rank
     model = Transformer(vocab_size=dataset.vocab_size)
-    model.to(device_id)
+    if device == "cuda":
+        model.to(device_id)
 
-    ddp_model = DDP(model, device_ids=[device_id])
+    device_ids = [device_id] if device == "cuda" else None
+    ddp_model = DDP(model, device_ids=device_ids)
 
     optimizer = torch.optim.SGD(ddp_model.parameters(), lr=0.1)
 
@@ -46,14 +51,16 @@ def main(global_rank, local_rank, world_size):
     num_epochs = 2
     for epoch in range(num_epochs):
         train_dataloader.sampler.set_epoch(epoch)
-        for batch in train_dataloader:
+        for it, batch in enumerate(train_dataloader):
             input, target = batch
-            input.to(device_id)
-            target.to(device_id)
+            if device == "cuda":
+                input = input.to(device_id)
+                target = target.to(device_id)
             optimizer.zero_grad()
             output = ddp_model(input, target)
             loss = F.nll_loss(output, target.view(-1))
-            print("train_loss", loss)
+            if global_rank == 0:
+                print(f"epoch/it: {epoch}/{it}, train_loss {float(loss)}")
             loss.backward()
             optimizer.step()
 
@@ -61,12 +68,14 @@ def main(global_rank, local_rank, world_size):
 
 
 if __name__ == "__main__":
-    # torch distributed will pick this up
-    # master_addr = os.environ["MASTER_ADDR"]
-    # master_port = os.environ["MASTER_PORT"]
+    if "MASTER_ADDR" not in os.environ:
+        os.environ["MASTER_ADDR"] = "127.0.0.1"
+        os.environ["MASTER_PORT"] = "6006"
 
-    global_rank = os.environ["NODE_RANK"]
-    local_rank = os.environ["LOCAL_RANK"]
-    world_size = os.environ["WORLD_SIZE"]
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    nprocs = torch.cuda.device_count() if device == "cuda" else 1
 
-    mp.spawn(main, args=(global_rank, local_rank, world_size), nprocs=torch.cuda.device_count())
+    global_rank = int(os.environ.get("RANK", -1))
+    world_size = int(os.environ.get("WORLD_SIZE", nprocs))
+
+    mp.spawn(main, args=(global_rank, world_size, device), nprocs=nprocs)
