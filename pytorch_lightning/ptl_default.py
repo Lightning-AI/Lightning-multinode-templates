@@ -5,17 +5,18 @@ from lightning.pytorch.demos import Transformer, WikiText2
 from torch.utils.data import DataLoader, random_split
 
 
-class LanguageModel(L.LightningModule):
+class LanguageDataModule(L.LightningDataModule):
     def __init__(self, batch_size):
         super().__init__()
         self.batch_size = batch_size
+        self.vocab_size = None
 
     def prepare_data(self):
-        WikiText2(download=True)
+        dataset = WikiText2(download=True)
+        self.vocab_size = dataset.vocab_size
 
     def setup(self, stage):
         dataset = WikiText2()
-        self.model = Transformer(vocab_size=dataset.vocab_size)
 
         # Split data in to train, val, test
         n = len(dataset)
@@ -29,6 +30,15 @@ class LanguageModel(L.LightningModule):
 
     def test_dataloader(self):
         return DataLoader(self.test_dataset, batch_size=self.batch_size, shuffle=False)
+
+
+class LanguageModel(L.LightningModule):
+    def __init__(self):
+        super().__init__()
+
+    def setup(self, stage):
+        vocab_size = self.trainer.datamodule.vocab_size
+        self.model = Transformer(vocab_size=vocab_size)
 
     def training_step(self, batch, batch_idx):
         input, target = batch
@@ -58,12 +68,14 @@ class LanguageModel(L.LightningModule):
 def main():
     L.seed_everything(42)
 
-    model = LanguageModel(batch_size=20)
+    datamodule = LanguageDataModule(batch_size=20)
+
+    model = LanguageModel()
 
     # Trainer
     trainer = L.Trainer(gradient_clip_val=0.25, max_epochs=2)
-    trainer.fit(model)
-    trainer.test(model)
+    trainer.fit(model, datamodule=datamodule)
+    trainer.test(model, datamodule=datamodule)
 
 
 if __name__ == "__main__":
