@@ -39,6 +39,8 @@ def main():
             fabric.backward(loss)
             optimizer.step()
 
+    fabric.save("fabric_fsdp.ckpt", {"model": model})
+
 
 if __name__ == "__main__":
     main()

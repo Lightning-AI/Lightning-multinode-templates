@@ -77,6 +77,8 @@ def main():
     trainer.fit(model, datamodule=datamodule)
     trainer.test(model, datamodule=datamodule)
 
+    trainer.save_checkpoint("ptl_default.ckpt")
+
 
 if __name__ == "__main__":
     main()

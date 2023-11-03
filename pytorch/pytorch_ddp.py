@@ -64,6 +64,12 @@ def main(local_rank, global_rank, world_size, device):
             loss.backward()
             optimizer.step()
 
+    if global_rank == 0:
+        state = {
+            'model': ddp_model.module.state_dict(),
+        }
+        torch.save(state, "pytorch_ddp.ckpt")
+
     dist.destroy_process_group()
 
 
