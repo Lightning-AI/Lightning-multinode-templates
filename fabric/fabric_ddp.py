@@ -13,7 +13,9 @@ def main():
 
     # Data
     with fabric.rank_zero_first(local=True):
-        dataset = WikiText2(download=True)
+        WikiText2(download=True)
+
+    dataset = WikiText2(download=False)
 
     # Split data in to train, val, test
     n = len(dataset)

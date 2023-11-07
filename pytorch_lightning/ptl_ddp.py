@@ -9,11 +9,10 @@ class LanguageDataModule(L.LightningDataModule):
     def __init__(self, batch_size):
         super().__init__()
         self.batch_size = batch_size
-        self.vocab_size = None
+        self.vocab_size = 33278
 
     def prepare_data(self):
-        dataset = WikiText2(download=True)
-        self.vocab_size = dataset.vocab_size
+        WikiText2(download=True)
 
     def setup(self, stage):
         dataset = WikiText2()
@@ -33,12 +32,12 @@ class LanguageDataModule(L.LightningDataModule):
 
 
 class LanguageModel(L.LightningModule):
-    def __init__(self):
+    def __init__(self, vocab_size):
         super().__init__()
+        self.vocab_size = vocab_size
 
     def setup(self, stage):
-        vocab_size = self.trainer.datamodule.vocab_size
-        self.model = Transformer(vocab_size=vocab_size)
+        self.model = Transformer(vocab_size=self.vocab_size)
 
     def training_step(self, batch, batch_idx):
         input, target = batch
@@ -70,7 +69,7 @@ def main():
 
     datamodule = LanguageDataModule(batch_size=20)
 
-    model = LanguageModel()
+    model = LanguageModel(datamodule.vocab_size)
 
     # Trainer
     trainer = L.Trainer(gradient_clip_val=0.25, max_epochs=2, strategy="ddp")
