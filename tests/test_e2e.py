@@ -46,7 +46,7 @@ def main():
         entrypoint = os.path.join(workdir, script)
         script_name, _ = os.path.splitext(os.path.basename(script))
         job_name = f"mmt-template-test-{prefix}-{script_name}"
-        job_names_and_artifacts.append(job_name, artifacts)
+        job_names_and_artifacts.append((job_name, artifacts))
 
         print(f"Starting MMT job {job_name}: {entrypoint}")
         plugin.run(
