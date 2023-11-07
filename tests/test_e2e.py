@@ -6,6 +6,19 @@ import uuid
 from lightning_sdk import Machine, Studio
 
 
+scripts = [
+    ("pytorch_lightning/ptl_default.py", "", ["ptl_default.ckpt"]),
+    ("pytorch_lightning/ptl_ddp.py", "", ["ptl_ddp.ckpt"]),
+    ("pytorch_lightning/ptl_fsdp.py", "", ["ptl_fsdp.ckpt"]),
+    ("pytorch_lightning/ptl_deepspeed.py", "deepspeed", ["ptl_deepspeed.ckpt"]),
+    ("fabric/fabric_default.py", "", ["fabric_default.ckpt"]),
+    ("fabric/fabric_ddp.py", "", ["fabric_ddp.ckpt"]),
+    ("fabric/fabric_fsdp.py", "", ["fabric_fsdp.ckpt"]),
+    ("fabric/fabric_deepspeed.py", "deepspeed", ["fabric_deepspeed.ckpt"]),
+    ("pytorch/pytorch_ddp.py", "", ["pytorch_ddp.ckpt"]),
+]
+
+
 def main():
     prefix = str(uuid.uuid4())[:8]
     studio_name = f"mmt-template-test-{prefix}-studio"
@@ -27,34 +40,21 @@ def main():
 
     workdir = "Lightning-multinode-templates"
 
-    scripts = [
-        "pytorch_lightning/ptl_default.py",
-        "pytorch_lightning/ptl_ddp.py",
-        "pytorch_lightning/ptl_fsdp.py",
-        "pytorch_lightning/ptl_deepspeed.py",
-        "fabric/fabric_default.py",
-        "fabric/fabric_ddp.py",
-        "fabric/fabric_fsdp.py",
-        "fabric/fabric_deepspeed.py",
-        "pytorch/pytorch_dpp.py"
-    ]
+    job_names_and_artifacts = []
 
-    names_to_artifacts = {}
-
-    for script in scripts:
+    for script, requirements, artifacts in scripts:
         entrypoint = os.path.join(workdir, script)
         script_name, _ = os.path.splitext(os.path.basename(script))
-        name = f"mmt-template-test-{prefix}-{script_name}"
+        job_name = f"mmt-template-test-{prefix}-{script_name}"
+        job_names_and_artifacts.append(job_name, artifacts)
 
-        print(f"Starting MMT job {name}: {entrypoint}")
+        print(f"Starting MMT job {job_name}: {entrypoint}")
         plugin.run(
-            command=f"python {entrypoint}",
-            name=name,
+            command=f"pip install {requirements} && python {entrypoint}",
+            name=job_name,
             cloud_compute=Machine.T4,
             num_instances=2
         )
-
-        names_to_artifacts[name] = f"{script_name}.ckpt"
 
     studio.stop()
 
@@ -68,11 +68,12 @@ def main():
         if t1 - t0 > timeout:
             break
         missing_artifacts = []
-        for name, artifact in names_to_artifacts.items():
+        for name, artifacts in job_names_and_artifacts:
             # TODO: also verify size or content
-            expected = f"/teamspace/jobs/{name}/{artifact}"
-            if not os.path.exists(expected):
-                missing_artifacts.append(expected)
+            for artifact in artifacts:
+                expected = f"/teamspace/jobs/{name}/{artifact}"
+                if not os.path.exists(expected):
+                    missing_artifacts.append(expected)
         if not missing_artifacts:
             break
 
