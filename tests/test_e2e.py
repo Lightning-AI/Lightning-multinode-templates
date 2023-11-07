@@ -1,5 +1,6 @@
 #! pip install lightning-sdk
 import os
+import time
 import uuid
 
 from lightning_sdk import Machine, Studio
@@ -38,6 +39,8 @@ def main():
         "pytorch/pytorch_dpp.py"
     ]
 
+    names_to_artifacts = {}
+
     for script in scripts:
         entrypoint = os.path.join(workdir, script)
         script_name, _ = os.path.splitext(os.path.basename(script))
@@ -51,9 +54,29 @@ def main():
             num_instances=2
         )
 
-    # TODO:
-    # - verify artifacts
+        names_to_artifacts[name] = f"{script_name}.ckpt"
+
     studio.stop()
+
+    timeout = 15 * 60  # 15 minutes
+    t0 = time.time()
+
+    missing_artifacts = []
+
+    while True:
+        t1 = time.time()
+        if t1 - t0 > timeout:
+            break
+        missing_artifacts = []
+        for name, artifact in names_to_artifacts.items():
+            # TODO: also verify size or content
+            expected = f"/teamspace/jobs/{name}/{artifact}"
+            if not os.path.exists(expected):
+                missing_artifacts.append(expected)
+        if not missing_artifacts:
+            break
+
+    assert not missing_artifacts, f"Artifacts still missing after {timeout}s: {' '.join(missing_artifacts)}"
 
 
 if __name__ == "__main__":
