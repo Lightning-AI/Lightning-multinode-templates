@@ -74,7 +74,7 @@ def main():
         for name, artifacts in job_names_and_artifacts:
             # TODO: also verify size or content
             for artifact in artifacts:
-                expected = f"/teamspace/jobs/{name}/{artifact}"
+                expected = f"/teamspace/jobs/{name}/nodes.0/{artifact}"
                 if not os.path.exists(expected):
                     missing_artifacts.append(expected)
         if not missing_artifacts:
