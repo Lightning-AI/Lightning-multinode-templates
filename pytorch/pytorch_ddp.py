@@ -25,7 +25,7 @@ def main(local_rank, global_rank, world_size, device):
     if local_rank == 0:
         WikiText2(download=True)
 
-    torch.distributed.barrier()
+    dist.barrier()
 
     dataset = WikiText2(download=False)
 
@@ -70,6 +70,7 @@ def main(local_rank, global_rank, world_size, device):
         }
         torch.save(state, "pytorch_ddp.ckpt")
 
+    dist.barrier()
     dist.destroy_process_group()
 
 
