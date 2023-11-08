@@ -27,7 +27,7 @@ def main():
 
     plugin_name = "multi-machine-training"
 
-    studio = Studio(studio_name, teamspace="thunder", create_ok=True)
+    studio = Studio(studio_name, create_ok=True)
     studio.start()
 
     studio.install_plugin(plugin_name)
