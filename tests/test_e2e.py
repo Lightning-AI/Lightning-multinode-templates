@@ -57,6 +57,7 @@ def main():
             name=job_name,
             cloud_compute=Machine.T4,
             num_instances=2
+        )
 
     studio.stop()
 
