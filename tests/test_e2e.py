@@ -49,12 +49,14 @@ def main():
         job_names_and_artifacts.append((job_name, artifacts))
 
         print(f"Starting MMT job {job_name}: {entrypoint}")
+        command = f"python {entrypoint}"
+        if requirements:
+            command = f"pip install {requirements} && {command}"
         plugin.run(
-            command=f"pip install {requirements} && python {entrypoint}",
+            command=command,
             name=job_name,
             cloud_compute=Machine.T4,
             num_instances=2
-        )
 
     studio.stop()
 
