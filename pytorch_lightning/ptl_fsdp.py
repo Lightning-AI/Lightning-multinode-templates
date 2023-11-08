@@ -72,11 +72,11 @@ def main():
     model = LanguageModel(datamodule.vocab_size)
 
     # Trainer
-    trainer = L.Trainer(gradient_clip_val=0.25, max_epochs=2, strategy="fsdp")
+    trainer = L.Trainer(max_epochs=2, strategy="fsdp")
     trainer.fit(model, datamodule=datamodule)
-    trainer.test(model, datamodule=datamodule)
-
     trainer.save_checkpoint("ptl_fsdp.ckpt")
+
+    trainer.test(model, datamodule=datamodule)
 
 
 if __name__ == "__main__":

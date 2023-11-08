@@ -74,9 +74,9 @@ def main():
     # Trainer
     trainer = L.Trainer(gradient_clip_val=0.25, max_epochs=2)
     trainer.fit(model, datamodule=datamodule)
-    trainer.test(model, datamodule=datamodule)
-
     trainer.save_checkpoint("ptl_default.ckpt")
+
+    trainer.test(model, datamodule=datamodule)
 
 
 if __name__ == "__main__":
