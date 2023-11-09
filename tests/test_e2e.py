@@ -7,15 +7,15 @@ from lightning_sdk import Machine, Studio
 
 
 scripts = [
-    ("pytorch_lightning/ptl_default.py", "", ["ptl_default.ckpt"]),
-    ("pytorch_lightning/ptl_ddp.py", "", ["ptl_ddp.ckpt"]),
-    ("pytorch_lightning/ptl_fsdp.py", "", ["ptl_fsdp.ckpt"]),
-    ("pytorch_lightning/ptl_deepspeed.py", "deepspeed", ["ptl_deepspeed.ckpt"]),
-    ("fabric/fabric_default.py", "", ["fabric_default.ckpt"]),
-    ("fabric/fabric_ddp.py", "", ["fabric_ddp.ckpt"]),
-    ("fabric/fabric_fsdp.py", "", ["fabric_fsdp.ckpt"]),
-    ("fabric/fabric_deepspeed.py", "deepspeed", ["fabric_deepspeed.ckpt"]),
-    ("pytorch/pytorch_ddp.py", "", ["pytorch_ddp.ckpt"]),
+    ("pytorch_lightning/ptl_default.py", "torch lightning", ["ptl_default.ckpt"]),
+    ("pytorch_lightning/ptl_ddp.py", "torch lightning", ["ptl_ddp.ckpt"]),
+    ("pytorch_lightning/ptl_fsdp.py", "torch lightning", ["ptl_fsdp.ckpt"]),
+    ("pytorch_lightning/ptl_deepspeed.py", "torch lightning deepspeed", ["ptl_deepspeed.ckpt"]),
+    ("fabric/fabric_default.py", "torch lightning", ["fabric_default.ckpt"]),
+    ("fabric/fabric_ddp.py", "torch lightning", ["fabric_ddp.ckpt"]),
+    ("fabric/fabric_fsdp.py", "torch lightning", ["fabric_fsdp.ckpt"]),
+    ("fabric/fabric_deepspeed.py", "torch lightning deepspeed", ["fabric_deepspeed.ckpt"]),
+    ("pytorch/pytorch_ddp.py", "torch lightning", ["pytorch_ddp.ckpt"]),
 ]
 
 
@@ -51,7 +51,7 @@ def main():
         print(f"Starting MMT job {job_name}: {entrypoint}")
         command = f"python {entrypoint}"
         if requirements:
-            command = f"pip install {requirements} && {command}"
+            command = f"pip install -U {requirements} && {command}"
         plugin.run(
             command=command,
             name=job_name,
