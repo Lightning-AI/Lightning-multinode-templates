@@ -5,6 +5,7 @@ from lightning.pytorch.demos import Transformer, WikiText2
 from torch.utils.data import DataLoader, random_split
 from lightning.fabric.strategies.fsdp import FSDPStrategy
 
+
 def main():
     L.seed_everything(42)
 
