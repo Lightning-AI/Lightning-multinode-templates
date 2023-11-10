@@ -32,7 +32,7 @@ def main():
     train_dataloader = fabric.setup_dataloaders(train_dataloader)
 
     model.train()
-    num_epochs = 2
+    num_epochs = 0
     for epoch in range(num_epochs):
         for it, batch in enumerate(train_dataloader):
             input, target = batch

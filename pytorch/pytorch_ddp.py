@@ -48,7 +48,7 @@ def main(local_rank, global_rank, world_size, device):
     optimizer = torch.optim.SGD(ddp_model.parameters(), lr=0.1)
 
     model.train()
-    num_epochs = 2
+    num_epochs = 0
     for epoch in range(num_epochs):
         train_dataloader.sampler.set_epoch(epoch)
         for it, batch in enumerate(train_dataloader):
