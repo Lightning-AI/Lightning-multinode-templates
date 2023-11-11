@@ -3,12 +3,13 @@ import torch
 import torch.nn.functional as F
 from lightning.pytorch.demos import Transformer, WikiText2
 from torch.utils.data import DataLoader, random_split
+from lightning.fabric.strategies.fsdp import FSDPStrategy
 
 
 def main():
     L.seed_everything(42)
 
-    fabric = L.Fabric(strategy="fsdp")
+    fabric = L.Fabric(strategy=FSDPStrategy(state_dict_type="full"))
     fabric.launch()
 
     # Data
