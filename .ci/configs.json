@@ -1,0 +1,65 @@
+[
+  {
+    "script": "pytorch_lightning/ptl_default.py",
+    "requirements": "torch lightning",
+    "artifacts": [
+      "ptl_default.ckpt"
+    ]
+  },
+  {
+    "script": "pytorch_lightning/ptl_ddp.py",
+    "requirements": "torch lightning",
+    "artifacts": [
+      "ptl_ddp.ckpt"
+    ]
+  },
+  {
+    "script": "pytorch_lightning/ptl_fsdp.py",
+    "requirements": "torch lightning",
+    "artifacts": [
+      "ptl_fsdp.ckpt"
+    ]
+  },
+  {
+    "script": "pytorch_lightning/ptl_deepspeed.py",
+    "requirements": "torch lightning deepspeed",
+    "artifacts": [
+      "ptl_deepspeed.ckpt"
+    ]
+  },
+  {
+    "script": "fabric/fabric_default.py",
+    "requirements": "torch lightning",
+    "artifacts": [
+      "fabric_default.ckpt"
+    ]
+  },
+  {
+    "script": "fabric/fabric_ddp.py",
+    "requirements": "torch lightning",
+    "artifacts": [
+      "fabric_ddp.ckpt"
+    ]
+  },
+  {
+    "script": "fabric/fabric_fsdp.py",
+    "requirements": "torch lightning",
+    "artifacts": [
+      "fabric_fsdp.ckpt"
+    ]
+  },
+  {
+    "script": "fabric/fabric_deepspeed.py",
+    "requirements": "torch lightning deepspeed",
+    "artifacts": [
+      "fabric_deepspeed.ckpt"
+    ]
+  },
+  {
+    "script": "pytorch/pytorch_ddp.py",
+    "requirements": "torch lightning",
+    "artifacts": [
+      "pytorch_ddp.ckpt"
+    ]
+  }
+]
